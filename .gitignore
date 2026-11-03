@@ -1,0 +1,27 @@
+# Build products
+build/
+dist/
+**/bin/
+**/obj/
+TestResults/
+*.xcresult/
+
+# Editor and OS state
+.DS_Store
+xcuserdata/
+*.xcuserstate
+.vs/
+.idea/
+.vscode/
+.claude/
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
+*.pem
+*.key

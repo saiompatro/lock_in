@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - run: make test
+      - run: make build
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test matching and session timing
+        run: dotnet run --project Windows/LockIn.Core.Tests -c Release
+      - name: Build Windows app
+        run: dotnet publish Windows/LockIn.Windows -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o dist/windows
+      - name: Smoke test Windows UI
+        shell: pwsh
+        run: |
+          $app = Start-Process dist/windows/LockIn.exe -ArgumentList '--smoke-test' -PassThru
+          if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'App startup timed out' }
+          if ($app.ExitCode -ne 0) { throw "App startup failed: $($app.ExitCode)" }

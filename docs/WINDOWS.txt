@@ -1,0 +1,15 @@
+Lock In for Windows
+
+Extract the entire ZIP to a permanent folder, then double-click LockIn.exe.
+No .NET installation or administrator access is required.
+Use Windows 10/11 x64, or the ARM64 archive on Windows ARM devices.
+
+Add study spaces, then start a session. Choose an entire app or add a window
+title keyword. Browser matching uses tab titles; it does not read URLs.
+Close the window to keep tracking in the tray. Right-click the tray icon to quit.
+
+The executable is unsigned and Windows may show a reputation warning.
+Only proceed if you trust the source and have checked the release checksum.
+
+Local data: %LOCALAPPDATA%\Lock In
+Support, source and license: https://github.com/saiompatro/lock_in

@@ -1,0 +1,97 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version tag to build (must exist, e.g. v1.0.0-beta.1)
+        required: true
+        default: v1.0.0-beta.1
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - run: brew install xcodegen
+      - run: make test
+      - name: Build universal macOS app
+        run: |
+          xcodebuild -project LockIn.xcodeproj -scheme LockIn -configuration Release -derivedDataPath build ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO build -quiet
+          mkdir -p dist
+          cp LICENSE 'build/Build/Products/Release/Lock In.app/Contents/Resources/LICENSE'
+          codesign --force --deep --sign - 'build/Build/Products/Release/Lock In.app'
+          codesign --verify --deep --strict 'build/Build/Products/Release/Lock In.app'
+          ditto -c -k --sequesterRsrc --keepParent 'build/Build/Products/Release/Lock In.app' dist/Lock-In-macOS-universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/*.zip
+          if-no-files-found: error
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet run --project Windows/LockIn.Core.Tests -c Release
+      - name: Publish self-contained Windows app
+        run: dotnet publish Windows/LockIn.Windows -c Release -r win-${{ matrix.arch }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o dist/app
+      - name: Smoke test Windows UI
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $app = Start-Process dist/app/LockIn.exe -ArgumentList '--smoke-test' -PassThru
+          if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'App startup timed out' }
+          if ($app.ExitCode -ne 0) { throw "App startup failed: $($app.ExitCode)" }
+      - name: Package portable app
+        shell: pwsh
+        run: |
+          Copy-Item LICENSE dist/app/LICENSE.txt
+          Copy-Item docs/WINDOWS.txt dist/app/README.txt
+          Compress-Archive -Path dist/app/* -DestinationPath dist/Lock-In-Windows-${{ matrix.arch }}.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}
+          path: dist/*.zip
+          if-no-files-found: error
+  publish:
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish release and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]] || { echo 'Invalid version tag'; exit 1; }
+          cd dist
+          sha256sum *.zip > SHA256SUMS.txt
+          args=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then args+=(--prerelease); fi
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "Lock In $RELEASE_TAG" --notes-file ../docs/RELEASE_NOTES.md "${args[@]}"
+          fi
+          gh release upload "$RELEASE_TAG" ./*.zip SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber

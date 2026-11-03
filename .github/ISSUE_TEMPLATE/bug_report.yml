@@ -1,0 +1,22 @@
+name: Bug report
+description: Report unexpected behavior on macOS or Windows.
+body:
+  - type: input
+    id: version
+    attributes:
+      label: App version and operating system
+      placeholder: v1.0.0-beta.1, Windows 11 x64
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Describe what happened and what you expected. Use synthetic app/window names; omit private data.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or logs (optional)
+      description: Remove personal URLs, titles, and history first.
