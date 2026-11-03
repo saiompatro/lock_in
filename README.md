@@ -21,15 +21,15 @@ No accounts, subscriptions, analytics, or app network requests. Your data stays 
 
 ## Download
 
-**First public beta: v1.0.0-beta.1.** Download the ZIP for your computer:
+**First public beta: v1.0.0-beta.2.** Download the ZIP for your computer:
 
 | Platform | Download | Requirements |
 | --- | --- | --- |
-| macOS — Apple Silicon & Intel | [Lock-In-macOS-universal.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.1/Lock-In-macOS-universal.zip) | macOS 14 Sonoma or later |
-| Windows — Intel / AMD (x64) | [Lock-In-Windows-x64.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.1/Lock-In-Windows-x64.zip) | Windows 10/11, 64-bit |
-| Windows — ARM64 | [Lock-In-Windows-arm64.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.1/Lock-In-Windows-arm64.zip) | Windows on ARM |
+| macOS — Apple Silicon & Intel | [Lock-In-macOS-universal.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.2/Lock-In-macOS-universal.zip) | macOS 14 Sonoma or later |
+| Windows — Intel / AMD (x64) | [Lock-In-Windows-x64.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.2/Lock-In-Windows-x64.zip) | Windows 10/11, 64-bit |
+| Windows — ARM64 | [Lock-In-Windows-arm64.zip](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.2/Lock-In-Windows-arm64.zip) | Windows on ARM |
 
-[All releases and release notes](https://github.com/saiompatro/lock_in/releases) · [SHA-256 checksums](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.1/SHA256SUMS.txt)
+[All releases and release notes](https://github.com/saiompatro/lock_in/releases) · [SHA-256 checksums](https://github.com/saiompatro/lock_in/releases/download/v1.0.0-beta.2/SHA256SUMS.txt)
 
 The Windows port is new and has fewer features than macOS; see the comparison below. The Windows ARM64 build is cross-compiled and needs real-device testing. These community builds are **not notarized on macOS** and **not Authenticode-signed on Windows**, so installation may show OS security prompts.
 

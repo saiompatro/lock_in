@@ -101,8 +101,8 @@ internal sealed class MainWindow : Form
         settings.Controls.Add(Note("Tracking runs only during a session. Locking Windows or sleeping pauses it automatically.\nNo account, analytics, network requests, keystroke capture, or browser history access.\nStored locally: your chosen spaces, preferences, and session totals. Detected titles are never saved."));
         settings.Controls.Add(ActionButton("Open local data folder", () =>
         {
-            Directory.CreateDirectory(LocalStore.DirectoryPath);
-            Process.Start(new ProcessStartInfo("explorer.exe", LocalStore.DirectoryPath) { UseShellExecute = true });
+            Directory.CreateDirectory(store.DirectoryPath);
+            Process.Start(new ProcessStartInfo("explorer.exe", store.DirectoryPath) { UseShellExecute = true });
         }));
         settings.Controls.Add(ActionButton("Delete all session history", () =>
         {
@@ -159,13 +159,13 @@ internal sealed class MainWindow : Form
         engine.SetAway(locked || suspended);
         Sample();
         lastSave = DateTimeOffset.UtcNow;
-        LocalStore.SaveLive(engine.Snapshot());
+        store.SaveLive(engine.Snapshot());
         RefreshState();
     }
     private void EndSession()
     {
         if (engine.Stop() is { } record) store.AddSession(record);
-        LocalStore.SaveLive(null);
+        store.SaveLive(null);
         CloseReminder();
         RefreshHistory();
         RefreshState();
@@ -183,7 +183,7 @@ internal sealed class MainWindow : Form
         if (engine.Tick()) ShowReminder();
         if (engine.Status != SessionStatus.Distracted) CloseReminder();
         if ((DateTimeOffset.UtcNow - lastSave).TotalSeconds >= 30)
-        { LocalStore.SaveLive(engine.Snapshot()); lastSave = DateTimeOffset.UtcNow; }
+        { store.SaveLive(engine.Snapshot()); lastSave = DateTimeOffset.UtcNow; }
         RefreshState();
     }
     private void SessionChanged(object sender, SessionSwitchEventArgs e) => OnUi(() =>

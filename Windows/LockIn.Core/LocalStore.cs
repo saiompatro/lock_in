@@ -1,22 +1,26 @@
 using System.Text.Json;
-using LockIn.Core;
 
-namespace LockIn.Windows;
+namespace LockIn.Core;
 
-internal sealed class LocalStore
+public sealed class LocalStore
 {
-    public static string DirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lock In");
-    public List<StudySpace> Spaces { get; } = Load<List<StudySpace>>("study-spaces.json") ?? [];
-    public List<SessionRecord> Sessions { get; } = Load<List<SessionRecord>>("sessions.json") ?? [];
-    public Preferences Preferences { get; } = Load<Preferences>("settings.json") ?? new();
+    public static string DefaultDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lock In");
+    public string DirectoryPath { get; }
+    public List<StudySpace> Spaces { get; }
+    public List<SessionRecord> Sessions { get; }
+    public Preferences Preferences { get; }
 
-    public LocalStore()
+    public LocalStore(string? directoryPath = null)
     {
+        DirectoryPath = directoryPath ?? DefaultDirectoryPath;
+        Spaces = Load<List<StudySpace>>("study-spaces.json") ?? [];
+        Sessions = Load<List<SessionRecord>>("sessions.json") ?? [];
+        Preferences = Load<Preferences>("settings.json") ?? new();
         var interrupted = Load<SessionRecord>("live-session.json");
         if (interrupted is not null)
         {
             AddSession(interrupted);
-            File.Delete(Path.Combine(DirectoryPath, "live-session.json"));
+            RemoveLive();
         }
     }
     public void SaveSpaces() => Save("study-spaces.json", Spaces);
@@ -31,14 +35,19 @@ internal sealed class LocalStore
     {
         Sessions.Clear();
         Save("sessions.json", Sessions);
-        File.Delete(Path.Combine(DirectoryPath, "live-session.json"));
+        RemoveLive();
     }
-    public static void SaveLive(SessionRecord? record)
+    public void SaveLive(SessionRecord? record)
     {
         if (record is not null) Save("live-session.json", record);
-        else File.Delete(Path.Combine(DirectoryPath, "live-session.json"));
+        else RemoveLive();
     }
-    private static T? Load<T>(string name)
+    private void RemoveLive()
+    {
+        var path = Path.Combine(DirectoryPath, "live-session.json");
+        if (File.Exists(path)) File.Delete(path);
+    }
+    private T? Load<T>(string name)
     {
         var path = Path.Combine(DirectoryPath, name);
         if (!File.Exists(path)) return default;
@@ -49,7 +58,7 @@ internal sealed class LocalStore
             throw new InvalidDataException($"Cannot read {name}. Back up and repair or move this file before restarting.");
         }
     }
-    private static void Save<T>(string name, T value)
+    private void Save<T>(string name, T value)
     {
         Directory.CreateDirectory(DirectoryPath);
         var target = Path.Combine(DirectoryPath, name);

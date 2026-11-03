@@ -3,7 +3,7 @@
 The `Release` workflow builds and tests both platforms before publishing assets. It requires GitHub Actions to be enabled and the repository to allow the workflow's `contents: write` permission.
 
 1. Ensure CI passes and perform the manual checks below.
-2. Tag the commit, e.g. `git tag v1.0.0-beta.1 && git push origin v1.0.0-beta.1`.
+2. Tag the commit, e.g. `git tag v1.0.0-beta.2 && git push origin v1.0.0-beta.2`.
 3. Watch **Actions → Release**. A tag containing `-` is published as a prerelease. To retry a tag, use **Run workflow** and supply the existing tag; assets are replaced on retry.
 4. Check all three ZIPs and `SHA256SUMS.txt` on the release page before promoting it.
 5. Update README download URLs when moving from beta to a stable release. For stable releases, `/releases/latest/download/<asset>` can replace the version-specific links.

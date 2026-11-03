@@ -28,6 +28,6 @@ jobs:
       - name: Smoke test Windows UI
         shell: pwsh
         run: |
-          $app = Start-Process dist/windows/LockIn.exe -ArgumentList '--smoke-test' -PassThru
+          $app = Start-Process dist/windows/LockIn.exe -ArgumentList '--smoke-test' -RedirectStandardError dist/smoke-error.txt -PassThru
           if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'App startup timed out' }
-          if ($app.ExitCode -ne 0) { throw "App startup failed: $($app.ExitCode)" }
+          if ($app.ExitCode -ne 0) { Get-Content dist/smoke-error.txt; throw "App startup failed: $($app.ExitCode)" }

@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Version tag to build (must exist, e.g. v1.0.0-beta.1)
+        description: Version tag to build (must exist, e.g. v1.0.0-beta.2)
         required: true
-        default: v1.0.0-beta.1
+        default: v1.0.0-beta.2
 permissions:
   contents: read
 concurrency:
@@ -54,9 +54,9 @@ jobs:
         if: matrix.arch == 'x64'
         shell: pwsh
         run: |
-          $app = Start-Process dist/app/LockIn.exe -ArgumentList '--smoke-test' -PassThru
+          $app = Start-Process dist/app/LockIn.exe -ArgumentList '--smoke-test' -RedirectStandardError dist/smoke-error.txt -PassThru
           if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'App startup timed out' }
-          if ($app.ExitCode -ne 0) { throw "App startup failed: $($app.ExitCode)" }
+          if ($app.ExitCode -ne 0) { Get-Content dist/smoke-error.txt; throw "App startup failed: $($app.ExitCode)" }
       - name: Package portable app
         shell: pwsh
         run: |
