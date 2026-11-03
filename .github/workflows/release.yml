@@ -27,7 +27,7 @@ jobs:
           xcodebuild -project LockIn.xcodeproj -scheme LockIn -configuration Release -derivedDataPath build ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO build -quiet
           mkdir -p dist
           cp LICENSE 'build/Build/Products/Release/Lock In.app/Contents/Resources/LICENSE'
-          codesign --force --deep --sign - 'build/Build/Products/Release/Lock In.app'
+          codesign --force --sign - --options runtime --timestamp=none --entitlements LockIn/Resources/LockIn.entitlements 'build/Build/Products/Release/Lock In.app'
           codesign --verify --deep --strict 'build/Build/Products/Release/Lock In.app'
           ditto -c -k --sequesterRsrc --keepParent 'build/Build/Products/Release/Lock In.app' dist/Lock-In-macOS-universal.zip
       - uses: actions/upload-artifact@v4
